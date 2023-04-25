@@ -14,7 +14,7 @@ const int MIDI_CHANNEL = 1;
 const int MAX_PAGE = 15;
 const int PER_PAGE = 8;
 unsigned int page = 0;
-const int TIME_DELAY_MILLIS = 50;
+const int TIME_DELAY_MILLIS = 500;
 
 unsigned long time_btn_1 = 0;
 unsigned long time_btn_2 = 0;
@@ -55,20 +55,20 @@ void handleMidiButtons();
 
 void handleControlButtons();
 
-void handleMidiMessage(int index, bool shouldSend);
+void handleMidiMessage(int index);
 
 void setup() {
     MIDI.begin();
-    pinMode(BTN_1, INPUT);
-    pinMode(BTN_2, INPUT);
-    pinMode(BTN_3, INPUT);
-    pinMode(BTN_4, INPUT);
-    pinMode(BTN_5, INPUT);
-    pinMode(BTN_6, INPUT);
-    pinMode(BTN_7, INPUT);
-    pinMode(BTN_8, INPUT);
-    pinMode(BTN_UP, INPUT);
-    pinMode(BTN_DOWN, INPUT);
+    pinMode(BTN_1, INPUT_PULLUP);
+    pinMode(BTN_2, INPUT_PULLUP);
+    pinMode(BTN_3, INPUT_PULLUP);
+    pinMode(BTN_4, INPUT_PULLUP);
+    pinMode(BTN_5, INPUT_PULLUP);
+    pinMode(BTN_6, INPUT_PULLUP);
+    pinMode(BTN_7, INPUT_PULLUP);
+    pinMode(BTN_8, INPUT_PULLUP);
+    pinMode(BTN_UP, INPUT_PULLUP);
+    pinMode(BTN_DOWN, INPUT_PULLUP);
 }
 
 void loop() {
@@ -78,7 +78,7 @@ void loop() {
 
 void handleControlButtons() {
     int input_btn_up = digitalRead(BTN_UP);
-    if (input_btn_up == HIGH) {
+    if (input_btn_up == LOW) {
         if(btn_state_up == LOW && millis() - time_btn_up >= TIME_DELAY_MILLIS) {
             time_btn_up = millis();
             if (page != MAX_PAGE) {
@@ -88,10 +88,12 @@ void handleControlButtons() {
             }
         }
         btn_state_up = HIGH;
-
+    }
+    else {
+        btn_state_up = LOW;
     }
     int input_btn_down = digitalRead(BTN_DOWN);
-    if (input_btn_down == HIGH) {
+    if (input_btn_down == LOW) {
         if(btn_state_down == LOW && millis() - time_btn_down >= TIME_DELAY_MILLIS) {
             time_btn_down = millis();
             if (page != 0) {
@@ -101,22 +103,50 @@ void handleControlButtons() {
             }
         }
         btn_state_down = HIGH;
-
+    } else {
+        btn_state_down = LOW;
     }
 }
 
 void handleMidiButtons() {
     for (int btn = FIRST_MIDI_BTN; btn <= LAST_MIDI_BTN; btn++) {
         int input = digitalRead(btn);
-        if (input == HIGH) {
-            int index = btn - FIRST_MIDI_BTN;
-            bool shouldSend = false;
-            handleMidiMessage(index, shouldSend);
+        int index = btn - FIRST_MIDI_BTN;
+        if (input == LOW) {
+            handleMidiMessage(index);
+        } else {
+            switch(index + 1) {
+                case 1:
+                    btn_state_1 = LOW;
+                    break;
+                case 2:
+                    btn_state_2 = LOW;
+                    break;
+                case 3:
+                    btn_state_3 = LOW;
+                    break;
+                case 4:
+                    btn_state_4 = LOW;
+                    break;
+                case 5:
+                    btn_state_5 = LOW;
+                    break;
+                case 6:
+                    btn_state_6 = LOW;
+                    break;
+                case 7:
+                    btn_state_7 = LOW;
+                    break;
+                case 8:
+                    btn_state_8 = LOW;
+                    break;
+            }
         }
     }
 }
 
-void handleMidiMessage(int index, bool shouldSend) {
+void handleMidiMessage(int index) {
+    bool shouldSend = false;
     switch (index + 1) {
         case 1:
             if(btn_state_1 == LOW && millis() - time_btn_1 >= TIME_DELAY_MILLIS) {
